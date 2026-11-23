@@ -1,8 +1,10 @@
 # portfolio
 
-검색 결과 화면 형태로 만든 개인 포트폴리오 사이트입니다. Astro로 만들었고 GitHub Pages로 배포합니다.
+검색창 화면 형태로 만든 개인 포트폴리오 사이트입니다.
 
 - 사이트: https://raindrop3.github.io/portfolio/
+
+![사이트 접속 화면](docs/demo.gif)
 
 ## 실행
 
