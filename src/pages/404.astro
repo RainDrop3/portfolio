@@ -1,0 +1,13 @@
+---
+import Base from "../layouts/Base.astro";
+import ResultsHeader from "../components/ResultsHeader.astro";
+import withBase from "../lib/withBase";
+---
+
+<Base title="404">
+  <ResultsHeader query="" />
+  <main class="plain">
+    <p>입력하신 검색어와 일치하는 페이지를 찾을 수 없습니다.</p>
+    <p><a class="btn" href={withBase("/")}>홈으로</a></p>
+  </main>
+</Base>

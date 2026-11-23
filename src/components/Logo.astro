@@ -1,0 +1,9 @@
+---
+import withBase from "../lib/withBase";
+import { NAME } from "../data/links";
+// 글자마다 색을 입히기 위해 한 글자씩 span으로 쪼갠다.
+---
+
+<a class="logo" href={withBase("/")} aria-label={`${NAME} 홈`}>
+  {[...NAME].map((ch) => <span>{ch}</span>)}
+</a>

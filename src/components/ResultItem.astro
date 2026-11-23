@@ -1,0 +1,53 @@
+---
+// Google 검색 결과 한 줄: 파비콘 + 사이트명 + URL → 파란 제목 → 설명
+interface Props {
+  site: string;
+  url: string;      // 화면에 보여줄 URL 문구 (예: github.com › RainDrop3)
+  title: string;
+  snippet: string;
+  href: string;
+  icon?: "github" | "blog" | "page" | "pdf";
+  external?: boolean;
+  download?: boolean;
+}
+const { site, url, title, snippet, href, icon = "page", external = false, download = false } = Astro.props;
+---
+
+<div class="result">
+  <div class="site">
+    <span class="favicon" aria-hidden="true">
+      {
+        icon === "github" && (
+          <svg viewBox="0 0 24 24" fill="#202124"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.026 2c-5.509 0-9.974 4.465-9.974 9.974 0 4.406 2.857 8.145 6.821 9.465.499.09.679-.217.679-.481 0-.237-.008-.865-.011-1.696-2.775.602-3.361-1.338-3.361-1.338-.452-1.152-1.107-1.459-1.107-1.459-.905-.619.069-.605.069-.605 1.002.07 1.527 1.028 1.527 1.028.89 1.524 2.336 1.084 2.902.829.091-.645.351-1.085.635-1.334-2.214-.251-4.542-1.107-4.542-4.93 0-1.087.389-1.979 1.024-2.675-.101-.253-.446-1.268.099-2.64 0 0 .837-.269 2.742 1.021a9.582 9.582 0 0 1 2.496-.336 9.554 9.554 0 0 1 2.496.336c1.906-1.291 2.742-1.021 2.742-1.021.545 1.372.203 2.387.099 2.64.64.696 1.024 1.587 1.024 2.675 0 3.833-2.33 4.675-4.552 4.922.355.308.675.916.675 1.846 0 1.334-.012 2.41-.012 2.737 0 .267.178.577.687.479C19.146 20.115 22 16.379 22 11.974 22 6.465 17.535 2 12.026 2z" /></svg>
+        )
+      }
+      {
+        icon === "blog" && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="#202124" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+        )
+      }
+      {
+        icon === "page" && (
+          <svg viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#4285f4" /><text x="12" y="17" font-family="Arial" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">M</text></svg>
+        )
+      }
+      {
+        icon === "pdf" && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ea4335" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+        )
+      }
+    </span>
+    <div>
+      <div class="site-name">{site}</div>
+      <div class="site-url">{url}</div>
+    </div>
+  </div>
+  <a
+    class="title"
+    href={href}
+    target={external ? "_blank" : undefined}
+    rel={external ? "noopener" : undefined}
+    download={download ? "" : undefined}>{title}</a
+  >
+  <p class="snippet">{snippet}</p>
+</div>

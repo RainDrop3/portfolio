@@ -1,0 +1,16 @@
+---
+import Base from "../layouts/Base.astro";
+import Logo from "../components/Logo.astro";
+import SearchBox from "../components/SearchBox.astro";
+import { NAME } from "../data/links";
+---
+
+<Base title={NAME}>
+  <main class="home">
+    <Logo />
+    <SearchBox />
+  </main>
+  <footer class="footer">
+    © 2026 {NAME} · Built with <a href="https://astro.build/" target="_blank" rel="noopener">Astro</a>
+  </footer>
+</Base>

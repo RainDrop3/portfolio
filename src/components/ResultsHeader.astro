@@ -1,0 +1,42 @@
+---
+import Logo from "./Logo.astro";
+import SearchBox from "./SearchBox.astro";
+import withBase from "../lib/withBase";
+import { GITHUB_URL, BLOG_URL, KAKAO_LOG_URL } from "../data/links";
+
+interface Props {
+  query: string;
+  active?: "all" | "projects";
+}
+const { query, active = "all" } = Astro.props;
+
+// Google 결과 페이지의 '전체 / 이미지 / 쇼핑…' 탭 줄에 해당
+const tabs = [
+  { id: "all", label: "전체", href: withBase("/about") },
+  { id: "projects", label: "프로젝트", href: withBase("/projects") },
+  { id: "github", label: "GitHub", href: GITHUB_URL, external: true },
+  { id: "blog", label: "블로그", href: BLOG_URL, external: true },
+  { id: "kakaotech", label: "카카오테크캠퍼스 기록", href: KAKAO_LOG_URL, external: true },
+];
+---
+
+<div class="results-top">
+  <header class="results-header">
+    <Logo />
+    <SearchBox value={query} />
+  </header>
+  <nav class="tabs" aria-label="검색 탭">
+    {
+      tabs.map((t) => (
+        <a
+          class:list={["tab", { active: t.id === active }]}
+          href={t.href}
+          target={t.external ? "_blank" : undefined}
+          rel={t.external ? "noopener" : undefined}
+        >
+          {t.label}
+        </a>
+      ))
+    }
+  </nav>
+</div>

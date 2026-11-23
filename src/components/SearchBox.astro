@@ -1,0 +1,118 @@
+---
+import withBase from "../lib/withBase";
+import { SUGGESTIONS } from "../data/links";
+
+interface Props {
+  value?: string; // 결과 페이지에서 검색창에 표시할 검색어
+}
+const { value = "" } = Astro.props;
+---
+
+<div class="search" data-search>
+  <div class="search-box">
+    <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"
+      ><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg
+    >
+    <!-- 실제 입력은 막고(readonly), 누르면 추천 목록만 연다 -->
+    <input
+      type="text"
+      readonly
+      value={value}
+      placeholder={value ? undefined : "여기를 클릭하세요"}
+      aria-label="검색"
+      role="combobox"
+      aria-expanded="false"
+      aria-controls="suggestions"
+      autocomplete="off"
+    />
+    <div class="search-tools" aria-hidden="true">
+      <svg viewBox="0 0 24 24"
+        ><path fill="#4285f4" d="m12 15c1.66 0 3-1.31 3-2.97v-7.02c0-1.66-1.34-3.01-3-3.01s-3 1.34-3 3.01v7.02c0 1.66 1.34 2.97 3 2.97z"></path><path fill="#34a853" d="m11 18.08h2v3.92h-2z"></path><path fill="#fbbc05" d="m7.05 16.87c-1.27-1.33-2.05-2.83-2.05-4.87h2c0 1.45 0.56 2.42 1.47 3.38v0.32l-1.15 1.18z"></path><path fill="#ea4335" d="m12 16.93a4.97 5.25 0 0 1 -3.54 -1.55l-1.41 1.49c1.26 1.34 3.02 2.06 4.95 2.06 3.54 0 6.43-2.76 6.43-6.93h-2c0 3.07-2.2 4.93-4.43 4.93z"></path></svg
+      >
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4285f4" stroke-width="2" stroke-linecap="round"
+        ><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3.2"></circle></svg
+      >
+    </div>
+  </div>
+  <ul class="suggestions" id="suggestions" role="listbox">
+    {
+      SUGGESTIONS.map((s) => (
+        <li role="option">
+          <a
+            class="suggestion"
+            href={s.external ? s.href : withBase(s.href)}
+            target={s.external ? "_blank" : undefined}
+            rel={s.external ? "noopener" : undefined}
+            download={s.download ? "" : undefined}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+              ><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg
+            >
+            <span class="label">{s.label}</span>
+            {s.external && <span class="tag">↗</span>}
+            {s.download && <span class="tag">PDF</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-search]").forEach((root) => {
+    const input = root.querySelector("input")!;
+    const items = Array.from(root.querySelectorAll<HTMLAnchorElement>(".suggestion"));
+    let index = -1;
+
+    const setActive = (i: number) => {
+      items.forEach((el) => el.classList.remove("active"));
+      index = i;
+      if (i >= 0) {
+        items[i].classList.add("active");
+        items[i].scrollIntoView({ block: "nearest" });
+      }
+    };
+    const open = () => {
+      root.classList.add("open");
+      input.setAttribute("aria-expanded", "true");
+    };
+    const close = () => {
+      root.classList.remove("open");
+      input.setAttribute("aria-expanded", "false");
+      setActive(-1);
+    };
+
+    root.querySelector(".search-box")!.addEventListener("click", () => {
+      input.focus();
+      open();
+    });
+    input.addEventListener("focus", open);
+
+    // 바깥을 누르면 닫는다
+    document.addEventListener("click", (e) => {
+      if (!root.contains(e.target as Node)) close();
+    });
+
+    // 키보드: ↑↓로 이동, Enter로 열기, Esc로 닫기
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        close();
+        input.blur();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        open();
+        setActive((index + 1) % items.length);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        open();
+        setActive((index - 1 + items.length) % items.length);
+      } else if (e.key === "Enter" && index >= 0) {
+        e.preventDefault();
+        items[index].click();
+      }
+    });
+
+    // 링크 열면서 다음 방문 때 닫힌 상태로 돌아오도록 (뒤로가기 캐시 대비)
+    window.addEventListener("pageshow", close);
+  });
+</script>

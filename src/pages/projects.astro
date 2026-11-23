@@ -1,0 +1,169 @@
+---
+import Base from "../layouts/Base.astro";
+import ResultsHeader from "../components/ResultsHeader.astro";
+import withBase from "../lib/withBase";
+import { REAL_NAME, EMAIL, GITHUB_URL } from "../data/links";
+
+const query = "대표 프로젝트";
+
+interface Project {
+  id: string;
+  title: string;
+  meta: [string, string][]; // [항목, 내용]
+  summary: string;
+  points: string[];
+  tech: string[];
+  links: { label: string; href: string }[];
+}
+
+// 내용은 이력서(이력서_강민규_elice.pdf)와 경험 정리 파일 기준. 여기만 고치면 프로젝트 페이지에 반영된다.
+const projects: Project[] = [
+  {
+    id: "preet",
+    title: "PreeT: 종합소득세 경비 판정 서비스",
+    meta: [["기간", "2026.08 – 2026.11"], ["소속", "카카오테크캠퍼스 4기"], ["인원", "6인 팀"], ["역할", "AI 리드"]],
+    summary:
+      "1인 개인사업자가 카드 승인내역을 올리면 지출 건별로 필요경비 인정 여부(가능, 불가, 확인필요)를 근거 조문과 함께 알려 주는 서비스입니다. 판정은 규칙 엔진이 하고, LLM은 판정 앞뒤 보조에만 씁니다.",
+    points: [
+      "국가법령정보 OPEN API로 법령, 행정규칙, 심판례, 해석례 35,525행을 적재하고, pgvector 벡터 검색과 pg_bigm 키워드 검색을 RRF로 합친 하이브리드 RAG를 구축했습니다. 규칙 카드 인용 51건 기준 조문 후보 재현율을 2/51에서 47/51로 올렸습니다.",
+      "모델이 개인 소비를 업무무관 비용으로만 읽어 가사경비 조문을 못 고르는 문제를 기본 조문 추가와 프롬프트 수정으로 풀고, 모델을 gpt-4o-mini에서 GPT-6 Luna로 바꿨습니다. 가사경비 조문 선택은 0/20에서 19~20/20이 됐습니다.",
+      "RAG 키워드 검색을 뺄지 따로 실험했습니다. 벡터 단독이 재현율과 속도에서 앞섰지만 기업업무추진비 조항 인용이 RRF 40/60, 벡터 15/60으로 갈려 RRF를 유지했습니다.",
+      "법령은 매주 EC2 systemd timer로 동기화합니다. 바뀐 조문만 재색인하고, 변경 요약과 영향받는 규칙 카드를 Discord로 알립니다.",
+      "미분류 가맹점 600건 표본으로 모델 2종을 비교해 GPT-6 Luna를 택하고, 분류 API와 Spring 업로드 연동을 구현했습니다. 해외 결제 도구 재현율은 52%에서 85%(94건, 확정 오답 0)가 됐습니다. 확정은 자동으로 하지 않고 후보 3개를 사용자에게 확인받습니다.",
+      "tool 13개를 쓰는 tool-calling 기반 AI 비서 서버를 만들고 Langfuse로 호출 단계별 토큰, 비용, 지연을 추적했습니다. 프롬프트 인젝션 공격 6종을 직접 실험하고 입력 검증과 시스템 프롬프트로 막았습니다. 평가 시나리오 44건 중 42건 통과했습니다.",
+      "팀 협업 인프라로 push마다 작업 기록을 요구하는 worklog 훅과 리뷰 24시간 리마인드 Discord 봇을 만들었습니다. 본인 PR은 50개(머지 47)입니다.",
+    ],
+    tech: ["Python", "FastAPI", "PostgreSQL", "pgvector", "pg_bigm", "Langfuse", "GitHub Actions", "AWS EC2"],
+    links: [
+      { label: "GitHub", href: "https://github.com/kakaotechcampus-4/ktc4-pusan-4" },
+    ],
+  },
+  {
+    id: "farmbroker",
+    title: "FarmBroker: 스마트팜 중개 플랫폼",
+    meta: [["기간", "2026.04 – 2026.08"], ["소속", "제7회 PNU 창의융합AI해커톤"], ["인원", "5인 팀"], ["역할", "백엔드"], ["수상", "DRB동일대표이사상"]],
+    summary: "도심 공실 제공자와 스마트팜을 하려는 도심 농부를 이어 주는 중개 서비스입니다. 공간 도메인 백엔드를 맡았고, 매칭, 계약, 인증 기능은 프론트까지 구현했습니다.",
+    points: [
+      "구현 전에 ERD, API 6종, 에러 코드, 권한표를 Notion 명세서로 먼저 쓰고, Swagger 문서를 구축했습니다. 공간 삭제는 매칭 이력과 FK 무결성을 지키려고 Soft Delete로 했고, 대표 이미지는 배치 쿼리 한 번으로 조회해 N+1을 막았습니다.",
+      "매칭 수락 시 나던 500 오류를 추적했습니다. 남은 신청을 거절하는 벌크 UPDATE가 영속성 컨텍스트를 비워서, 다음 줄의 LAZY 프록시가 LazyInitializationException을 냈습니다. 역할 부여를 UPDATE 앞으로 옮겨 해결했습니다.",
+      "계약서 기능에서 한쪽이 조건을 고친 뒤 상대가 이전 화면에서 동의해도 계약이 확정되는 문제를 막았습니다. 정수 버전 카운터로 변경을 감지해 409를 돌려주고, 확정 시 매칭 상태, 공간 상태, 역할 부여, 나머지 신청 자동 거절을 한 트랜잭션으로 처리합니다.",
+      "단일 role을 Set으로 바꿔 활동에 따라 역할이 쌓이게 했고, 기존 컬럼에 문자열로 저장해 스키마 변경 없이 기존 데이터와 호환되게 했습니다. 가입 요청에서 role을 없애 역할 자칭을 막았습니다.",
+      "SMTP 이메일 인증을 구현했습니다. 6자리 코드, 유효 5분, 시도 5회, 재발송 60초 제한입니다.",
+      "팀 PR 82개 중 26개를 작성했고(팀 내 최다), 팀원 PR 41건을 리뷰했습니다.",
+    ],
+    tech: ["Java", "Spring Boot", "MySQL", "Docker"],
+    links: [
+      { label: "GitHub", href: "https://github.com/PNU-2026-AI-Hackathon/pnuai-b-06-bomdongmarket" },
+    ],
+  },
+  {
+    id: "trademate",
+    title: "TradeMate: 매매 습관 훈련 플랫폼",
+    meta: [["기간", "2025.12 – 2026.03"], ["소속", "PNU AI BOOSTER"], ["인원", "4인 팀"], ["역할", "프론트엔드"], ["수상", "우수상(1위)"]],
+    summary: "과거 시점부터 미래 데이터를 가린 채 한 캔들씩 진행하며 자기 원칙을 세우고 검증하도록 돕는 주식 투자 훈련 플랫폼입니다. 주식 조회, 원칙 설정, 회원가입, 회원정보, 분석 보고서 페이지를 맡았습니다.",
+    points: [
+      "목업 데이터였던 주식 조회 페이지를 실제 시세(20종목 1년치 일봉)에 연동했습니다. 이미 동작하던 시뮬레이션 페이지의 연동 방식(Next.js rewrite, axios service, Zustand store)을 따라 구조를 통일했고, lightweight-charts로 캔들 차트와 기간 버튼을 만들었습니다.",
+      "차트가 뜨지 않던 원인은 데이터가 올 때만 컨테이너를 그려 초기화 시점의 크기가 0이었던 것입니다. 컨테이너를 항상 마운트하고 로딩과 빈 상태를 오버레이로 바꾼 뒤, ResizeObserver로 크기가 잡힌 다음 차트를 초기화해 해결했습니다.",
+      "Next.js API Route와 nodemailer로 6자리 이메일 인증(유효 5분, 카운트다운, 6자리 입력 시 자동 검증)을 구현하고, 회원가입 입력 검증을 모두 통과해야 제출 버튼이 활성화되게 했습니다.",
+      "분석 보고서의 점수 4개가 백엔드 어느 데이터에서 나오는지 코드로 하나씩 확인했습니다. 백엔드는 거래 1건 단위 점수만 주고 있었고, 백엔드 수정 없이 프론트에서 전체 거래의 수량 가중 평균으로 원칙, 수익 점수를 계산해 마지막 거래 기준이던 점수를 전체 거래 기준으로 바꿨습니다.",
+      "프론트 PR 30개 중 10개를 작성했고 팀원 PR 16건을 리뷰했습니다. 기능 PR마다 AI에 입력한 프롬프트, 응답 요약, 적용 결과를 문서로 남겼습니다.",
+    ],
+    tech: ["Next.js", "TypeScript", "Tailwind CSS"],
+    links: [
+      { label: "GitHub", href: "https://github.com/AddShotInCode/TradeMate_FE" },
+    ],
+  },
+  {
+    id: "snapmind",
+    title: "SnapMind: 스크린샷 정리 앱의 이미지 분류",
+    meta: [["기간", "2026.05 – 2026.06"], ["인원", "2인 팀"], ["역할", "분류 모델 개발과 앱 탑재"]],
+    summary: "스크린샷을 저장한 이유를 잊지 않도록 OCR, 이미지 분류, 태그로 정리해 주는 Android 앱입니다. 이미지 카테고리 분류 모델을 학습하고 TFLite로 변환해 앱에 넣었습니다.",
+    points: [
+      "EfficientNetB0 전이학습으로 직접 캡처하고 크롤링한 이미지 2,912장(6개 카테고리)을 학습해 테스트 정확도 89.65%를 얻었습니다. 동적 범위 양자화로 4.3MB TFLite 모델을 만들었습니다.",
+      "베이스 모델을 동결해 0.1% 학습률로 30epoch 학습한 뒤, 상위 30개 층을 풀어 미세조정했습니다. RandomZoom, RandomContrast 등 데이터 증강으로 과적합을 줄였습니다.",
+      "AI가 추천한 20epoch로는 성능이 부족해 30으로 늘렸고, 검증 loss는 0.0860에서 0.0769, 검증 정확도는 0.9062에서 0.9353이 됐습니다.",
+      "softmax는 어디에도 속하지 않는 사진도 항상 하나를 고르는 문제가 있었습니다. unknown 클래스 학습, softmax와 임계값 조합을 거쳐 sigmoid와 binary crossentropy로 바꾸고 'Others' 카테고리를 추가해, 모든 클래스 확률이 0.65 미만이면 Others로 판정하게 했습니다.",
+      "Colab에서는 맞는데 앱에서 틀리던 문제의 원인 3가지(런타임 op 버전, 하드코딩한 라벨 순서, 중복된 0~1 정규화)를 찾아 고쳤습니다.",
+    ],
+    tech: ["Python", "TensorFlow Lite", "EfficientNetB0", "Kotlin", "Room"],
+    links: [{ label: "GitHub", href: "https://github.com/RainDrop3/SnapMind" }],
+  },
+  {
+    id: "de",
+    title: "데이터 엔지니어링 학습 프로젝트",
+    meta: [["기간", "2026.07 – 현재"], ["과정", "DataTalksClub Data Engineering Zoomcamp"], ["인원", "개인 학습"]],
+    summary: "NYC 택시 운행 데이터로 수집, 적재, 변환까지 모듈별 파이프라인을 직접 구성하며 배우고 있습니다.",
+    points: [
+      "Docker Compose로 PostgreSQL과 pgAdmin을 띄우고, 택시 CSV를 청크 단위로 적재하는 수집 스크립트를 컨테이너로 만들었습니다. Terraform으로 GCS 버킷과 BigQuery 데이터셋을 생성했습니다.",
+      "Kestra로 PostgreSQL에 적재하는 ETL flow와 GCS, BigQuery에 적재하는 ELT flow를 구성하고, 스케줄 트리거로 2019년 green 택시 데이터를 backfill했습니다.",
+      "dbt Core와 DuckDB로 2019~2020 택시 데이터를 staging, intermediate, marts 세 계층으로 변환했습니다. 두 데이터의 컬럼 차이(trip_type, ehail_fee)로 생긴 union 오류를 해결하고, 월별 지역 매출 리포팅 모델을 작성했습니다.",
+    ],
+    tech: ["Terraform", "GCP", "BigQuery", "Spark", "Kestra", "dbt", "DuckDB", "Docker", "PostgreSQL"],
+    links: [{ label: "GitHub", href: "https://github.com/RainDrop3/data-engineering-zoomcamp" }],
+  },
+];
+---
+
+<Base title={`${query} - 검색`}>
+  <ResultsHeader query={query} active="projects" />
+
+  <div class="results-layout">
+    <main>
+      {
+        projects.map((p) => (
+          <div class="info-box">
+            <section class="overview record project" id={p.id}>
+              <h2>{p.title}</h2>
+              <dl class="project-meta">
+                {p.meta.map(([k, v]) => (
+                  <>
+                    <dt>{k}</dt>
+                    <dd>{v}</dd>
+                  </>
+                ))}
+              </dl>
+              <p>{p.summary}</p>
+              <ul class="tl-list">
+                {p.points.map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+              <dl class="project-meta tech">
+                <dt>사용 기술</dt>
+                <dd>{p.tech.join(", ")}</dd>
+              </dl>
+              <p class="project-links">
+                {p.links.map((l) => (
+                  <a href={l.href} target="_blank" rel="noopener">
+                    {l.label}
+                  </a>
+                ))}
+              </p>
+            </section>
+          </div>
+        ))
+      }
+    </main>
+
+    <aside class="panel">
+      <h2>{REAL_NAME}</h2>
+      <p class="sub"><a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+      <h3>바로가기</h3>
+      <ul>
+        {
+          projects.map((p) => (
+            <li>
+              <a href={`#${p.id}`}>{p.title.split(":")[0]}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <h3>더 보기</h3>
+      <ul>
+        <li><a href={withBase("/about")}>소개</a></li>
+        <li><a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href={withBase("/resume.pdf")} download>이력서 PDF</a></li>
+      </ul>
+    </aside>
+  </div>
+</Base>

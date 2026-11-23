@@ -1,0 +1,178 @@
+---
+import Base from "../layouts/Base.astro";
+import ResultsHeader from "../components/ResultsHeader.astro";
+import ResultItem from "../components/ResultItem.astro";
+import withBase from "../lib/withBase";
+import { REAL_NAME, EMAIL, GITHUB_URL, BLOG_URL, KAKAO_LOG_URL } from "../data/links";
+
+const query = "소개";
+
+interface TimelineItem {
+  when: string;
+  title: string;
+  lines?: string[];
+}
+
+const stack = [
+  { category: "언어", main: ["C++", "Python"] },
+  { category: "프레임워크", main: ["FastAPI"] },
+  { category: "데이터베이스", main: ["PostgreSQL"] },
+  { category: "도구", main: ["Git", "Docker"] },
+];
+
+const education: TimelineItem[] = [
+  { when: "2022.03 – 현재", title: "부산대학교 정보컴퓨터공학부" },
+  { when: "2019.03 – 2022.02", title: "화봉고등학교 졸업" },
+];
+
+const military: TimelineItem[] = [{ when: "2023.02 – 2024.08", title: "육군 병장 만기전역" }];
+
+const awards: TimelineItem[] = [
+  {
+    when: "2026.08",
+    title: "카카오테크캠퍼스 아이디어톤 우수상",
+  },
+  {
+    when: "2026.04 – 2026.08",
+    title: "제7회 PNU 창의융합AI해커톤 우수상 (DRB동일대표이사상)",
+  },
+  {
+    when: "2025.12 – 2026.03",
+    title: "PNU AI BOOSTER 우수상",
+  },
+];
+
+const activities: TimelineItem[] = [
+  {
+    when: "2026.05 – 2026.11",
+    title: "카카오테크캠퍼스 4기 · Agentic AI course",
+    lines: [
+      "GPT-2 Transformer 구조로 LLM 내부 동작 원리 학습",
+      "LangChain 기반 일정 관리 에이전트를 6주간 단계별 구현 (Pydantic 구조화 출력, RAG, MCP tool 호출, supervisor, multi-agent)",
+      "최종 프로젝트로 Agentic AI 기반 서비스 개발",
+    ],
+  },
+  {
+    when: "2025.09 – 현재",
+    title: "PULSE (알고리즘 학술동아리)",
+    lines: ["AtCoder에 정기적으로 참가해 문제 해결 후 회고 공유", "Union-Find, 위상정렬 등 중/고급 알고리즘과 시간복잡도 계산법 학습", "2025 ICPC 예선 참가"],
+  },
+  {
+    when: "2025.03 – 2025.08",
+    title: "코드코치 (교육봉사 연합동아리)",
+    lines: ["초등학생 대상 아두이노 교육봉사. 담당 학생 2명의 주간 학습지 채점과 질문 응답, 수업 실습 보조", "초음파 센서와 서보모터로 자동으로 열리는 쓰레기통 만들기 수업 직접 진행"],
+  },
+];
+---
+
+<Base title={`${query} - 검색`}>
+  <ResultsHeader query={query} active="all" />
+
+  <div class="results-layout">
+    <main>
+      <div class="info-box">
+      <section class="overview intro">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+            ><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z"></path></svg
+          >
+          소개
+        </h2>
+        <p>
+          <b>{REAL_NAME}</b>는 Data Engineering과 AI Engineering을 공부하는 학생입니다. 시계열 기반 데이터 처리, RAG 구축, 에이전트 환경 설계 등을 바탕으로 기업의 업무 현장 생산성에 기여하는 DX/AX에도 관심이 있습니다. 
+        </p>
+      </section>
+
+      {
+        [
+          { heading: "학력", items: education },
+          { heading: "병역사항", items: military },
+          { heading: "수상내역", items: awards },
+          { heading: "동아리 및 대외활동", items: activities },
+        ].map(({ heading, items }) => (
+          <section class="overview record">
+            <h2>{heading}</h2>
+            <div class="timeline">
+              {items.map((it) => (
+                <div class="tl-item">
+                  <div class="tl-when">{it.when}</div>
+                  <div>
+                    <div class="tl-title">{it.title}</div>
+                    {it.lines && (
+                      <ul class="tl-list">
+                        {it.lines.map((l) => (
+                          <li>{l}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+      </div>
+
+      <ResultItem
+        icon="github"
+        site="GitHub"
+        url="github.com › RainDrop3"
+        title="RainDrop3 - GitHub"
+        snippet="프로젝트 소스 코드와 학습 기록을 볼 수 있는 GitHub 프로필입니다."
+        href={GITHUB_URL}
+        external
+      />
+      <ResultItem
+        icon="blog"
+        site="RainDrop3 기술 블로그"
+        url="raindrop3.github.io"
+        title="Tech Blog"
+        snippet="학부 수업에서 배운 내용을 정리한 기술 블로그입니다."
+        href={BLOG_URL}
+        external
+      />
+      <ResultItem
+        icon="page"
+        site="카카오테크캠퍼스 기록"
+        url="raindrop3.github.io › kakaotech-log"
+        title="카카오테크캠퍼스 기록"
+        snippet="카카오테크캠퍼스 1단계 학습 기록과 2단계 프로젝트 산출물을 모아 둔 링크 모음입니다."
+        href={KAKAO_LOG_URL}
+        external
+      />
+    </main>
+
+    <aside class="panel">
+      <h2>{REAL_NAME}</h2>
+      <p class="sub"><a href={`mailto:${EMAIL}`}>{EMAIL}</a></p>
+      <h3>관심 분야</h3>
+      <p>Data Engineering, AI Engineering</p>
+      <h3>기술 스택</h3>
+      <dl class="stack">
+        {stack.map((row) => (
+          <>
+            <dt>{row.category}</dt>
+            <dd>{row.main.join(", ")}</dd>
+          </>
+        ))}
+      </dl>
+      <h3>프로필</h3>
+      <ul>
+        <li><a href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href={BLOG_URL} target="_blank" rel="noopener">기술 블로그</a></li>
+        <li><a href={withBase("/projects")}>대표 프로젝트</a></li>
+      </ul>
+      <h3>이력서</h3>
+      <a class="pdf-link" href={withBase("/resume.pdf")} download>
+        <svg viewBox="0 0 32 40" aria-hidden="true">
+          <path d="M4 1h15l9 9v26a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z" fill="#fff" stroke="#ea4335" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M19 1v9h9" fill="none" stroke="#ea4335" stroke-width="2" stroke-linejoin="round"></path>
+          <rect x="1" y="19" width="24" height="12" rx="2" fill="#ea4335"></rect>
+          <text x="13" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#fff">PDF</text>
+        </svg>
+        <span>이력서 다운로드</span>
+      </a>
+    </aside>
+  </div>
+</Base>
